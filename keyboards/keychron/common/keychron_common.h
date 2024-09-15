@@ -37,6 +37,10 @@ enum {
     BT_HST3,
     P2P4G,
     BAT_LVL,
+    MD_BT,
+    MD_USB,
+    MD_WL,
+    MD_OFF,
 #endif
 #ifdef ANANLOG_MATRIX
     PROF1,
@@ -52,6 +56,10 @@ enum {
     #define BT_HST3     KC_TRANS
     #define P2P4G       KC_TRANS
     #define BAT_LVL     KC_TRANS
+    #define MD_BT       MD_BLUETOOTH
+    #define MD_USB      MD_USB
+    #define MD_WL       MD_WIRELESS
+    #define MD_OFF      MD_OFF
 #endif
 #ifndef ANANLOG_MATRIX
     #define PROF1 KC_TRANS

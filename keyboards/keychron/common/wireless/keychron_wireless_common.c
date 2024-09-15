@@ -32,6 +32,11 @@ bool firstDisconnect = true;
 
 static uint32_t pairing_key_timer;
 static uint8_t  host_idx = 0;
+static uint8_t macro_mode = 0; // 0 = None, 1 = Bluetooth, 2 = USB, 3 = 2.4GHz
+
+void set_macro_mode(uint8_t mode) {
+    macro_mode = mode;
+}
 
 bool process_record_keychron_wireless(uint16_t keycode, keyrecord_t *record) {
     static uint8_t host_idx;
@@ -60,6 +65,25 @@ bool process_record_keychron_wireless(uint16_t keycode, keyrecord_t *record) {
                     host_idx          = 0;
                     pairing_key_timer = 0;
                 }
+            }
+            break;
+        case MD_BT:
+            if (record->event.pressed) {
+                set_macro_mode(1); 
+            }
+            break;
+        case MD_USB:
+            if (record->event.pressed) {
+                set_macro_mode(2);
+            }
+            break;
+        case MD_WL:
+            if (record->event.pressed) {
+                set_macro_mode(3);
+            }
+        case MD_OFF:
+            if (record->event.pressed) {
+                set_macro_mode(0);
             }
             break;
 #if (defined(LED_MATRIX_ENABLE) || defined(RGB_MATRIX_ENABLE)) && defined(BAT_LEVEL_LED_LIST)
@@ -134,18 +158,34 @@ void wireless_pre_task(void) {
         if ((readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN)) == mode) {
             time = 0;
 
-            switch (mode) {
-                case 0x01:
-                    set_transport(TRANSPORT_BLUETOOTH);
-                    break;
-                case 0x02:
-                    set_transport(TRANSPORT_P2P4);
-                    break;
-                case 0x03:
-                    set_transport(TRANSPORT_USB);
-                    break;
-                default:
-                    break;
+            if (macro_mode == 0) {
+                switch (mode) {
+                    case 0x01:
+                        set_transport(TRANSPORT_BLUETOOTH);
+                        break;
+                    case 0x02:
+                        set_transport(TRANSPORT_P2P4);
+                        break;
+                    case 0x03:
+                        set_transport(TRANSPORT_USB);
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                switch (macro_mode) {
+                    case 1:
+                        set_transport(TRANSPORT_BLUETOOTH);
+                        break;
+                    case 2:
+                        set_transport(TRANSPORT_USB);
+                        break;
+                    case 3:
+                        set_transport(TRANSPORT_P2P4);
+                        break;
+                    default:
+                        break;
+                }
             }
         } else {
             mode = readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN);
