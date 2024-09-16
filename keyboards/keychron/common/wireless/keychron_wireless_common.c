@@ -32,11 +32,7 @@ bool firstDisconnect = true;
 
 static uint32_t pairing_key_timer;
 static uint8_t  host_idx = 0;
-static uint8_t macro_mode = 0; // 0 = None, 1 = Bluetooth, 2 = USB, 3 = 2.4GHz
-
-void set_macro_mode(uint8_t mode) {
-    macro_mode = mode;
-}
+static uint8_t mode_source = 1; // 1 = physical switch, 2 = macro key
 
 bool process_record_keychron_wireless(uint16_t keycode, keyrecord_t *record) {
     static uint8_t host_idx;
@@ -69,23 +65,23 @@ bool process_record_keychron_wireless(uint16_t keycode, keyrecord_t *record) {
             break;
         case MD_BT:
             if (record->event.pressed) {
-                set_macro_mode(1); 
+                set_transport(TRANSPORT_BLUETOOTH);
+                mode_source = 2; 
             }
             break;
         case MD_USB:
             if (record->event.pressed) {
-                set_macro_mode(2);
+                set_transport(TRANSPORT_USB);
+                mode_source = 2; 
             }
             break;
         case MD_WL:
             if (record->event.pressed) {
-                set_macro_mode(3);
-            }
-        case MD_OFF:
-            if (record->event.pressed) {
-                set_macro_mode(0);
+                set_transport(TRANSPORT_P2P4);
+                mode_source = 2; 
             }
             break;
+
 #if (defined(LED_MATRIX_ENABLE) || defined(RGB_MATRIX_ENABLE)) && defined(BAT_LEVEL_LED_LIST)
         case BAT_LVL:
             if ((get_transport() & TRANSPORT_WIRELESS) && !usb_power_connected()) {
@@ -145,51 +141,37 @@ void keychron_wireless_common_task(void) {
 
 void wireless_pre_task(void) {
     static uint8_t  mode = 0;
-    static uint32_t time = 0;
+    static uint32_t time = 0; 
 
     if (time == 0) {
         if ((readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN)) != mode) {
             mode = readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN);
             time = timer_read32();
+            mode_source = 1;
         }
     }
 
-    if ((time && timer_elapsed32(time) > 100) || get_transport() == TRANSPORT_NONE) {
-        if ((readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN)) == mode) {
-            time = 0;
-
-            if (macro_mode == 0) {
-                switch (mode) {
-                    case 0x01:
-                        set_transport(TRANSPORT_BLUETOOTH);
-                        break;
-                    case 0x02:
-                        set_transport(TRANSPORT_P2P4);
-                        break;
-                    case 0x03:
-                        set_transport(TRANSPORT_USB);
-                        break;
-                    default:
-                        break;
+    if (mode_source == 1) {
+        if ((time && timer_elapsed32(time) > 100) || get_transport() == TRANSPORT_NONE) {
+                if ((readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN)) == mode) {
+                    time = 0;
+                        switch (mode) {
+                            case 0x01:
+                                set_transport(TRANSPORT_BLUETOOTH);
+                                break;
+                            case 0x02:
+                                set_transport(TRANSPORT_P2P4);
+                                break;
+                            case 0x03:
+                                set_transport(TRANSPORT_USB);
+                                break;
+                            default:
+                                break;
+                        }
+                } else {
+                    mode = readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN);
+                    time = timer_read32();
                 }
-            } else {
-                switch (macro_mode) {
-                    case 1:
-                        set_transport(TRANSPORT_BLUETOOTH);
-                        break;
-                    case 2:
-                        set_transport(TRANSPORT_USB);
-                        break;
-                    case 3:
-                        set_transport(TRANSPORT_P2P4);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        } else {
-            mode = readPin(BT_MODE_SELECT_PIN) << 1 | readPin(P2P4_MODE_SELECT_PIN);
-            time = timer_read32();
         }
     }
 }

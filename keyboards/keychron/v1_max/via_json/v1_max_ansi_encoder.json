@@ -80,7 +80,10 @@
     {"name": "Bluetooth Host 2", "title": "Bluetooth Host 2", "shortName": "BTH2"},
     {"name": "Bluetooth Host 3", "title": "Bluetooth Host 3", "shortName": "BTH3"},
     {"name": "2.4G", "title": "2.4G", "shortName": "2.4G"},
-    {"name": "Battery Level", "title": "Show battery level", "shortName": "Batt"}
+    {"name": "Battery Level", "title": "Show battery level", "shortName": "Batt"},
+    {"name": "Bluetooth Mode", "title": "Bluetooth Mode", "shortName": "MDBT"},
+    {"name": "USB Mode", "title": "USB Mode", "shortName": "MDUSB"},
+    {"name": "Wireless Mode", "title": "Wireless Mode", "shortName": "MDWL"},
   ],
   "matrix": {"rows": 6, "cols" : 16},
   "layouts": {
