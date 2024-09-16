@@ -39,7 +39,12 @@ extern wt_func_t       wireless_transport;
 static transport_t transport = TRANSPORT_NONE;
 
 #ifdef NKRO_ENABLE
-nkro_t nkro = {false, false};
+nkro_t nkro = {true, false, false};
+void initialize_nkro(void) {
+    nkro.usb = keymap_config.nkro;
+    nkro.bluetooth = keymap_config.nkro; 
+    nkro.p2p4 = keymap_config.nkro; 
+}
 #endif
 
 static void transport_changed(transport_t new_transport);
@@ -141,9 +146,7 @@ void set_transport(transport_t new_transport) {
                 wireless_disconnect();
                 lpm_timer_stop();
 #ifdef NKRO_ENABLE
-#    if defined(WIRELESS_NKRO_ENABLE)
-                nkro.bluetooth = keymap_config.nkro;
-#    endif
+                nkro.usb = keymap_config.nkro;
                 keymap_config.nkro = nkro.usb;
 #endif
                 break;
@@ -155,7 +158,7 @@ void set_transport(transport_t new_transport) {
                 usb_transport_enable(false);
                 lpm_timer_reset();
 #if defined(NKRO_ENABLE)
-                nkro.usb = keymap_config.nkro;
+                nkro.bluetooth = keymap_config.nkro;
 #    if defined(WIRELESS_NKRO_ENABLE)
                 keymap_config.nkro = nkro.bluetooth;
 #    else
@@ -171,9 +174,9 @@ void set_transport(transport_t new_transport) {
                 usb_transport_enable(false);
                 lpm_timer_reset();
 #if defined(NKRO_ENABLE)
-                nkro.usb = keymap_config.nkro;
+                nkro.p2p4 = keymap_config.nkro;
 #    if defined(WIRELESS_NKRO_ENABLE)
-                keymap_config.nkro = nkro.bluetooth;
+                keymap_config.nkro = nkro.p2p4;
 #    else
                 keymap_config.nkro = FALSE;
 #    endif

@@ -26,6 +26,7 @@ typedef enum {
 typedef struct {
     bool usb : 1;
     bool bluetooth : 1;
+    bool p2p4: 1;
 } nkro_t;
 #endif
 
